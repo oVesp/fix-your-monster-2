@@ -20,7 +20,8 @@ local module = {
 		local monster = _G.MONSTERGENERATOR.RollMonster()
 		print(data)
 		
-		-- Ensure Monster table exists (should be created from template, but check to be safe)
+		-- Ensure Monster table exists (should always be created from template, but defensive check)
+		-- This handles edge cases where template might change or data corruption occurs
 		if not data.Value.Monster then
 			data.Value.Monster = {}
 		end
