@@ -50,47 +50,6 @@ local module = {
 
 	end,
 
-	function(plr, data) -- migrate existing players with empty Stats/Moves
-		-- Check if player already has a monster but Stats or Moves are empty/corrupted
-		if data.Value.NewPlayer then return end -- Skip new players
-		
-		local monster = data.Value.Monster
-		if not monster then return end -- No monster data at all
-		
-		-- Check if Stats or Moves are empty or missing
-		local needsStatsMigration = not monster.Stats or (type(monster.Stats) == "table" and next(monster.Stats) == nil)
-		local needsMovesMigration = not monster.Moves or (type(monster.Moves) == "table" and next(monster.Moves) == nil)
-		
-		if needsStatsMigration or needsMovesMigration then
-			print("Migrating corrupted data for player:", plr.Name)
-			
-			-- Regenerate monster data based on existing race and level
-			local newMonster = _G.MONSTERGENERATOR.RollMonster(plr.UserId, false, {
-				race = monster.Race,
-				level = monster.Level or 1,
-				stage = monster.Stage
-			})
-			
-			-- Only fix Stats if corrupted
-			if needsStatsMigration then
-				monster.Stats = {}
-				for statKey, statValue in pairs(newMonster.Stats) do
-					monster.Stats[statKey] = statValue
-				end
-				print("Restored Stats for", plr.Name)
-			end
-			
-			-- Only fix Moves if corrupted
-			if needsMovesMigration then
-				monster.Moves = {}
-				for moveKey, moveValue in pairs(newMonster.Moves) do
-					monster.Moves[moveKey] = moveValue
-				end
-				print("Restored Moves for", plr.Name)
-			end
-		end
-	end,
-
 	function(plr, data) -- update versioning: game version is now up-to-date
 		local last_played = data.Value.LastUpdatePlayed;
 
