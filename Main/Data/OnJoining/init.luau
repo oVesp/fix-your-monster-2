@@ -20,6 +20,11 @@ local module = {
 		local monster = _G.MONSTERGENERATOR.RollMonster()
 		print(data)
 		
+		-- Ensure Monster table exists (should be created from template, but check to be safe)
+		if not data.Value.Monster then
+			data.Value.Monster = {}
+		end
+		
 		-- Initialize Stats and Moves tables if they don't exist (since template doesn't define them)
 		if not data.Value.Monster.Stats then
 			data.Value.Monster.Stats = {}
