@@ -19,15 +19,76 @@ local module = {
 		print("no monster")
 		local monster = _G.MONSTERGENERATOR.RollMonster()
 		print(data)
-		for k, v in pairs(monster) do
-			data.Value.Monster[k] = v
+		
+		-- Initialize Stats and Moves tables if they don't exist (since template doesn't define them)
+		if not data.Value.Monster.Stats then
+			data.Value.Monster.Stats = {}
+		end
+		if not data.Value.Monster.Moves then
+			data.Value.Monster.Moves = {}
 		end
 		
-		for k,v in pairs(monster.Stats) do
-			data.Value.Monster.Stats[k] = v
+		-- Copy all monster data
+		for k, v in pairs(monster) do
+			if k == "Stats" then
+				-- Copy stats individually to ensure they're all set
+				for statKey, statValue in pairs(v) do
+					data.Value.Monster.Stats[statKey] = statValue
+				end
+			elseif k == "Moves" then
+				-- Copy moves individually
+				for moveKey, moveValue in pairs(v) do
+					data.Value.Monster.Moves[moveKey] = moveValue
+				end
+			else
+				-- Copy other fields directly
+				data.Value.Monster[k] = v
+			end
 		end
+		
 		data.Value.NewPlayer = false;
 
+	end,
+
+	function(plr, data) -- migrate existing players with empty Stats/Moves
+		-- Check if player already has a monster but Stats or Moves are empty/corrupted
+		if data.Value.NewPlayer then return end -- Skip new players
+		
+		local monster = data.Value.Monster
+		if not monster then return end -- No monster data at all
+		
+		-- Check if Stats or Moves are empty or missing
+		local needsStatsMigration = not monster.Stats or (type(monster.Stats) == "table" and next(monster.Stats) == nil)
+		local needsMovesMigration = not monster.Moves or (type(monster.Moves) == "table" and next(monster.Moves) == nil)
+		
+		if needsStatsMigration or needsMovesMigration then
+			print("Migrating corrupted data for player:", plr.Name)
+			
+			-- Regenerate monster data based on existing race and level
+			local newMonster = _G.MONSTERGENERATOR.RollMonster(plr.UserId, false, {
+				race = monster.Race,
+				level = monster.Level or 1,
+				stage = monster.Stage
+			})
+			
+			-- Only fix Stats if corrupted
+			if needsStatsMigration then
+				monster.Stats = {}
+				for statKey, statValue in pairs(newMonster.Stats) do
+					monster.Stats[statKey] = statValue
+				end
+				print("Restored Stats for", plr.Name)
+			end
+			
+			-- Only fix Moves if corrupted
+			if needsMovesMigration then
+				monster.Moves = {}
+				for moveKey, moveValue in pairs(newMonster.Moves) do
+					monster.Moves[moveKey] = moveValue
+				end
+				print("Restored Moves for", plr.Name)
+			end
+		end
 	end,
 
 	function(plr, data) -- update versioning: game version is now up-to-date
