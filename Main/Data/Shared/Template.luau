@@ -18,8 +18,8 @@ return {
 		SessionTime = 0, 	
 		CareMistakes = 0, 	
 		Personality = nil, 	
-		Stats = {}, 
-		Moves = {},
+		-- Stats and Moves are initialized in OnJoining module, not in template
+		-- This prevents empty values from overwriting actual data
 		History = {},
 		Appearance = {},
 		BaseRaceFamily = nil, 	

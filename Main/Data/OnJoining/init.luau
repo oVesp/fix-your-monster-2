@@ -19,13 +19,39 @@ local module = {
 		print("no monster")
 		local monster = _G.MONSTERGENERATOR.RollMonster()
 		print(data)
-		for k, v in pairs(monster) do
-			data.Value.Monster[k] = v
+		
+		-- Ensure Monster table exists (should always be created from template, but defensive check)
+		-- This handles edge cases where template might change or data corruption occurs
+		if not data.Value.Monster then
+			data.Value.Monster = {}
 		end
 		
-		for k,v in pairs(monster.Stats) do
-			data.Value.Monster.Stats[k] = v
+		-- Initialize Stats and Moves tables if they don't exist (since template doesn't define them)
+		if not data.Value.Monster.Stats then
+			data.Value.Monster.Stats = {}
 		end
+		if not data.Value.Monster.Moves then
+			data.Value.Monster.Moves = {}
+		end
+		
+		-- Copy all monster data
+		for k, v in pairs(monster) do
+			if k == "Stats" then
+				-- Copy stats individually to ensure they're all set
+				for statKey, statValue in pairs(v) do
+					data.Value.Monster.Stats[statKey] = statValue
+				end
+			elseif k == "Moves" then
+				-- Copy moves individually
+				for moveKey, moveValue in pairs(v) do
+					data.Value.Monster.Moves[moveKey] = moveValue
+				end
+			else
+				-- Copy other fields directly
+				data.Value.Monster[k] = v
+			end
+		end
+		
 		data.Value.NewPlayer = false;
 
 	end,
